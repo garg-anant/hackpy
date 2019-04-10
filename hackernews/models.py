@@ -15,13 +15,15 @@ class ProfileUser(AbstractUser):
 
 class NewsLinks(models.Model):
 	title = models.CharField(max_length=300)
-	posted_by = models.ForeignKey(ProfileUser, on_delete=models.CASCADE)
+	posted_by = models.ForeignKey(ProfileUser, on_delete=models.CASCADE, null=True, blank=True)
 	title_link = models.URLField(max_length=400)
-	num_comments = models.PositiveIntegerField(default=0)
+	num_comments = models.PositiveIntegerField(default=0, null=True, blank=True)
 	hackernews_post_id = models.PositiveIntegerField(unique=True)
-	upvotes = models.PositiveSmallIntegerField(default=0)
-	downvotes = models.PositiveSmallIntegerField(default=0)
-	karma_points = models.PositiveSmallIntegerField(default=0)
+	upvotes = models.PositiveSmallIntegerField(default=0, null=True, blank=True)
+	downvotes = models.PositiveSmallIntegerField(default=0, null=True, blank=True)
+	# karma_points = models.PositiveSmallIntegerField(default=0, null=True, blank=True)
+	karma_points = models.CharField(max_length=10, null=True, blank=True)
+	time_posted = models.DateTimeField(null=True, blank=True)
 
 	def __str__(self):
 		return self.title

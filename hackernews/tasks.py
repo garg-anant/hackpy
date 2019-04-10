@@ -18,13 +18,25 @@ import datetime
 
 # @shared_task
 # def add(x,y):
-# 	return x + y
+#   return x + y
 
 # @app.task
 # def test(word):
-# 	return word
+#   return word
 
 @celery.decorators.periodic_task(run_every=datetime.timedelta(hours=1))
 def myfunc():
-    print('thissss is periodic_task')
-    return 'periodic_task'
+	req = requests.get("https://news.ycombinator.com/")
+	soup = BeautifulSoup(req.text, 'html.parser')
+	news_links = soup.find_all("a",{'class':'storylink'})
+	print(type(news_links),'typeeeee')
+	list_news_links = []
+	
+	for link in news_links[::-1]:
+		list_news_links.append(str(link.get('href')))
+		list_news_links.append(str(link.text))
+		host_name_url = urlparse(str(link.get('href')))
+		list_news_links.append(str(host_name_url.netloc))
+
+	print('thissss is periodic_task')
+	return 'periodic_task'
