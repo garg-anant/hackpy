@@ -8,13 +8,16 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 
-from .tasks import add
+# from .tasks import test, return_5, myfunc
+from .tasks import myfunc
 
 
 # Create your views here.
 
 def index(request):
-	add.delay(2,3)
+	myfunc.delay()
+	# test.delay('hello world!')
+	# return_5.delay()
 
 	if request.method == 'POST':
 		username = request.POST.get('username')

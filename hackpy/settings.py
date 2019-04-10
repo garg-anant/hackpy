@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django_jinja',
     'hackernews',
     'django_extensions',
+    'djcelery',
 ]
 
 AUTH_USER_MODEL = 'hackernews.ProfileUser'
