@@ -36,7 +36,56 @@ def home(request):
 	else:
 		req = requests.get("https://news.ycombinator.com/")
 		soup = BeautifulSoup(req.text, 'html.parser')
-		
+
+		news_element = soup.find_all("tr", {'class':'athing'})
+
+		for element in news_element:
+			# print(element,'\n\n')
+
+			#get-hn-id - completed
+			
+			soup_hnnews_id = BeautifulSoup(str(element),'html.parser')
+			hnnews_id = soup_hnnews_id.find("tr",{'class':'athing'})
+			hnnews_id = hnnews_id.get('id')
+			print(hnnews_id)
+			
+			#top-line - completed
+			'''			
+			soup_top_line = BeautifulSoup(str(element),'html.parser')
+			news_link = soup_top_line.find("a", {'class':'storylink'})
+			print(news_link.text)
+			print(news_link.get('href'))
+			print(urlparse(news_link.get('href')).netloc)
+			print('\n')
+			'''
+			#bottom-line
+			next_row = element.findNext('tr')
+			soup_bottom_link = BeautifulSoup(str(next_row),'html.parser')
+
+			karma_point = soup_bottom_link.find("span",{'class':'score'})
+			post_by = soup_bottom_link.find("a",{'class':'hnuser'})
+			time_of_upload = soup_bottom_link.find("span",{'class':'age'})
+
+			comments = soup_bottom_link.find_all('a',{'href':'item?id='+hnnews_id})
+			if len(comments) == 2:
+				if "discuss" in comments[1].text:
+					print('0') # 0 comments in case of "discuss" 
+				else:
+					print(comments[1].text.split('\xa0')[0]) #number of comments
+			else:
+				print(None) #number of comments stored as None when unavailable 
+			# print(comments)
+
+			
+
+			'''
+			print(soup_bottom_link)
+			print(karma_point.text)
+			print(post_by.text)
+			print(time_of_upload.text)
+			print('\n')
+			'''
+		'''
 		news_links = soup.find_all("a",{'class':'storylink'})
 		karma_points = soup.find_all("span",{'class':'score'})
 		# print(karma_points)
@@ -52,11 +101,9 @@ def home(request):
 			if "discuss" in comment.text:
 				num_comments_list.append(0)
 		num_comments_list.pop(0)
-		
-		for i in num_comments_list:
-			print(type(i))		
-		print(num_comments_list)
-		print(len(num_comments_list))		
+
+		# print(num_comments_list)
+		# print(len(num_comments_list))		
 
 		list_news_links = []
 		
@@ -79,9 +126,9 @@ def home(request):
 
 
 
-
+		'''
 		ctx = {
 			# 'titles' : titles,
-			'list_news_links' : list_news_links,
+			# 'list_news_links' : list_news_links,
 		}
 	return render(request, 'hackernews/home.jinja', ctx)
