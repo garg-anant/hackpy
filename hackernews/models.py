@@ -6,9 +6,9 @@ from django.conf import settings
 
 
 class ProfileUser(AbstractUser):
-	email = models.CharField(max_length=100, unique=True)
+	username = models.CharField(max_length=100, unique=True)
 
-	REQUIRED_FIELDS = ['email']
+	# REQUIRED_FIELDS = ['username']
 
 	def __str__(self):
 		return self.email
@@ -34,6 +34,8 @@ class comments(models.Model):
 	content = models.CharField(max_length=1000)
 	posted_by = models.ForeignKey(ProfileUser, on_delete=models.CASCADE)		
 	added_on = models.DateTimeField(auto_now_add=True)
+	comment = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
+	hnnews_id = models.PositiveIntegerField(blank=True, null=True)
 
 	def __str__(self):
 		return self.id
