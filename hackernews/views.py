@@ -31,7 +31,24 @@ def index(request):
 
 	return render(request, 'hackernews/login.jinja' ,{})
 
+def reply(request, newslink_id):
+	comments = Comments.objects.filter(newslink=newslink_id)
+	# newslink = NewsLinks.objects.
+	ctx = {
+		'comments':comments,
+		}
+	return render(request, 'hackernews/reply.jinja', ctx)
+
 def home(request):
+	
+	if not request.user.is_authenticated:
+		return render(request, 'hackernews/login.jinja',{})
+	else:
+		newslinks = NewsLinks.objects.all()	
+		# base = urlparse(newslinks.title_link.netloc)
+
+
+	'''
 	if not request.user.is_authenticated:
 		return render(request, 'hackernews/login.jinja', {})
 	else:
@@ -40,12 +57,11 @@ def home(request):
 
 		news_element = soup.find_all("tr", {'class':'athing'})
 
-		for element in news_element:
+		for element in news_element[]:
 			#get-hn-id - completed
 			soup_hnnews_id = BeautifulSoup(str(element),'html.parser')
 			hnnews_id = soup_hnnews_id.find("tr",{'class':'athing'})
 			hnnews_id = hnnews_id.get('id')
-			print(hnnews_id)
 			
 			#ADD USERS ONLY IF NOT ALREADY EXISTS
 			#ADD Newslinks and all related data if not already exists
@@ -141,10 +157,11 @@ def home(request):
 								
 								add_comments_fields.hnnews_id = int(comment_hnnews_id)
 
-								if comment_text.text is not None:
-									add_comments_fields.content = comment_text.span.text
-								else:
-									add_comments_fields.content = None
+								if comment_text is not None:
+									if comment_text.span.text is not None:
+										add_comments_fields.content = comment_text.span.text
+									else:
+										add_comments_fields.content = None
 								
 								add_comments_fields.added_on = comment_posted_on
 								
@@ -172,8 +189,11 @@ def home(request):
 				add_news_fields.time_posted = posted_time #storing time of post as calculated above
 
 				add_news_fields.save()
-				
+		'''		
 
-	
-	ctx = {}
+		
+	ctx = {
+		'newslinks':newslinks,
+		# 'base':base,
+	}
 	return render(request, 'hackernews/home.jinja', ctx)

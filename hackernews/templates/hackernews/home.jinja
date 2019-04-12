@@ -26,13 +26,20 @@
     <tr><td><table border="0" cellpadding="0" cellspacing="0" class="itemlist">
 
     <tbody>
-      {% for i in range(0,list_news_links|length,3) %}
+      <!-- {# {% for i in range(0,list_news_links|length,3) %}
       <tr class="athing" id="19580860">
       <td align="right" valign="top" class="title"><span class="rank">{{ loop.index }}</span></td><td valign="top" class="votelinks"><center><a id="up_19580860" href="vote?id=19580860&amp;how=up&amp;goto=news"><div class="votearrow" title="upvote"></div></a></center></td><td class="title"><a href="{{ list_news_links[i] }}" class="storylink">{{ list_news_links[i+1] }}</a><span class="sitebit comhead"> (<a href="{{ list_news_links[i+2] }}"><span class="sitestr">{{ list_news_links[i+2] }}</span></a>)</span></td></tr><tr><td colspan="2"></td><td class="subtext">
-        <span class="score" id="score_19580860">42 points</span> by <a href="user?id=yvonnick" class="hnuser">yvonnick</a> <span class="age"><a href="item?id=19580860">1 hour ago</a></span> <span id="unv_19580860"></span> | <a href="hide?id=19580860&amp;goto=news">hide</a> | <a href="item?id=19580860">3&nbsp;comments</a>              </td></tr>
+        <span class="score" id="score_19580860">42 points</span> by <a href="user?id=yvonnick" class="hnuser">yvonnick</a> <span class="age"><a href="item?id=19580860">1 hour ago</a></span> <span id="unv_19580860"></span> | <a href="hide?id=19580860&amp;goto=news">hide</a> | <a href="item?id=19580860">3&nbsp;comments</a>              </td></tr> #} -->
+
+       {% for newslink in newslinks[::-1] %}
+      <tr class="athing" id="">
+      <td align="right" valign="top" class="title"><span class="rank">{{ loop.index }}</span></td><td valign="top" class="votelinks"><center><a id="up_19580860" href="vote?id=19580860&amp;how=up&amp;goto=news"><div class="votearrow" title="upvote"></div></a></center></td><td class="title"><a href="{{ newslink.title_link }}" class="storylink">{{ newslink.title }}</a><span class="sitebit comhead"> (<a href=""><span class="sitestr">here goes link</span></a>)</span></td></tr><tr><td colspan="2"></td><td class="subtext">
+        <span class="score" id="score_19580860">42 points</span> by <a href="user?id=yvonnick" class="hnuser">yvonnick</a> <span class="age"><a href="item?id=19580860">1 hour ago</a></span> <span id="unv_19580860"></span> | <a href="hide?id=19580860&amp;goto=news">hide</a> | <a href="{{ url('reply', newslink_id=newslink.id) }}">{{ newslink.num_comments }}&nbsp;comments</a>              </td></tr>
 
       <tr class="spacer" style="height:5px"></tr>
       {% endfor %}
+
+
   	</tbody>
 </table></td></tr>
 
