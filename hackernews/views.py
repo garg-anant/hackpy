@@ -76,7 +76,6 @@ def home(request):
 					#check and register if displayed user already exists
 					profile_user = ProfileUser.objects.filter(username=post_by.text).exists()
 					if profile_user == False:
-						print('user does not exist..')
 						new_hnuser,_ = ProfileUser.objects.get_or_create(username=post_by.text)
 					
 					profile_user_instance = ProfileUser.objects.filter(username=post_by.text).last()
@@ -126,7 +125,6 @@ def home(request):
 									pass
 
 								profile_user_instance = ProfileUser.objects.filter(username=post_by.text).last()
-								print('\n\n Comment segment begins \n\n')
 								comments_add,_ = Comments.objects.get_or_create(hnnews_id=int(comment_hnnews_id),newslink=newslink_obj, posted_by=profile_user_instance)
 
 								add_comments_fields = Comments.objects.filter(hnnews_id=int(comment_hnnews_id)).last()
@@ -141,22 +139,15 @@ def home(request):
 									comment_posted_on = datetime.datetime.now() - datetime.timedelta(minutes=int(time_of_upload.text.split(' ')[0]))
 								
 								
-								print(comment_hnnews_id)
 								add_comments_fields.hnnews_id = int(comment_hnnews_id)
 
 								if comment_text.text is not None:
-									print('eeeeeeeeeeeeeeeeeeeeeeeee')
-									print(comment_text.span.text)
 									add_comments_fields.content = comment_text.span.text
 								else:
-									print('dddddddddddddddddddddddddd')
-									print('store NONE')
 									add_comments_fields.content = None
 								
-								print(comment_posted_on)
 								add_comments_fields.added_on = comment_posted_on
 								
-								print('\n\n Comment segment ends \n\n')
 								add_comments_fields.save()
 
 
@@ -178,9 +169,7 @@ def home(request):
 					# print(karma_point.text)
 					add_news_fields.karma_points = karma_point.text #storing karma points
 
-				print(time_of_upload.text)
 				add_news_fields.time_posted = posted_time #storing time of post as calculated above
-				print('\n')
 
 				add_news_fields.save()
 				
