@@ -27,15 +27,15 @@ class NewsLinks(models.Model):
 	downvotes = models.PositiveSmallIntegerField(default=0, null=True, blank=True)
 
 	def __str__(self):
-		return '%s - ' % (self.hackernews_post_id)
+		return '%s - %s' % (self.id, self.hackernews_post_id)
 
-class comments(models.Model):
+class Comments(models.Model):
 	newslink = models.ForeignKey(NewsLinks, on_delete=models.CASCADE)
-	content = models.CharField(max_length=1000)
+	content = models.CharField(max_length=10000)
 	posted_by = models.ForeignKey(ProfileUser, on_delete=models.CASCADE)		
 	added_on = models.DateTimeField(auto_now_add=True)
 	comment = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
 	hnnews_id = models.PositiveIntegerField(blank=True, null=True)
 
 	def __str__(self):
-		return self.id
+		return '%s' % (self.id)
