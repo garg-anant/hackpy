@@ -4,6 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
 
 import requests
 from bs4 import BeautifulSoup
@@ -21,6 +22,7 @@ from .forms import CommentForm, RegisterUser
 def index(request):
 	myfunc.delay()
 	form = RegisterUser()
+	
 	if request.method == 'POST':
 		username = request.POST.get('username')
 		password = request.POST.get('password')
@@ -47,6 +49,7 @@ def comments(request, newslink_id):
 			form_save.newslink = newslink
 			form_save.posted_by = user_posted_by
 			form_save.save()
+			return redirect('comments', newslink_id=newslink.id)
 		else:
 			print(form.errors)
 
@@ -58,6 +61,15 @@ def comments(request, newslink_id):
 	}
 	
 	return render(request, 'hackernews/comments.jinja', ctx)
+
+def search(request):
+	text = request.GET.get('q')
+	filtered_links = NewsLinks.objects.filter(title__icontains=text)
+	
+	ctx = {
+		'filtered_links':filtered_links,
+	}
+	return render(request,'hackernews/search.jinja',ctx)
 
 def create_account(request):
 	form = RegisterUser(request.POST)
@@ -114,6 +126,7 @@ def reply(request,comment_id):
 			form_save.posted_by = user_posted_by
 			form_save.comment = comment
 			form_save.save()
+			return redirect('comments', newslink_id=comment.newslink.id)
 		else:
 			print(form.errors)
 
@@ -124,6 +137,7 @@ def reply(request,comment_id):
 	
 	return render(request, 'hackernews/reply.jinja', ctx)
 
+# @login_required(login_url=redirect('views'))
 def home(request):
 	
 	ctx = {}

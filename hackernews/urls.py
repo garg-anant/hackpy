@@ -8,6 +8,7 @@ urlpatterns=[
 	path('comments/<int:newslink_id>', views.comments, name='comments'),
 	path('logout', views.logout_func, name='logout'),
 	path('reply/<int:comment_id>', views.reply, name='reply'),
+	path('search', views.search, name='search'),
 
 	#Ajax Vote Newslink 
 	path('vote_newslink', views.vote_newslink, name='vote_newslink'),
