@@ -5,11 +5,12 @@ from celery.schedules import crontab
 from celery.decorators import periodic_task
 from celery import task
 
-
+import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
-import time
 import datetime
+
+from .models import NewsLinks, ProfileUser, Comments
 
 # @periodic_task(run_every=(crontab(minute="*")))
 # def return_5():
@@ -26,13 +27,12 @@ import datetime
 
 @celery.decorators.periodic_task(run_every=datetime.timedelta(hours=1))
 def myfunc():
-	
 	req = requests.get("https://news.ycombinator.com/")
 	soup = BeautifulSoup(req.text, 'html.parser')
 
 	news_element = soup.find_all("tr", {'class':'athing'})
 
-	for element in news_element:
+	for element in news_element[::-1]:
 		#get-hn-id - completed
 		soup_hnnews_id = BeautifulSoup(str(element),'html.parser')
 		hnnews_id = soup_hnnews_id.find("tr",{'class':'athing'})
@@ -50,7 +50,7 @@ def myfunc():
 			news_link = soup_top_line.find("a", {'class':'storylink'})
 			add_news_fields.title = news_link.text #storing title
 			add_news_fields.title_link = news_link.get('href') #storing title link
-			# print(urlparse(news_link.get('href')).netloc) #getting the base_url
+			add_news_fields.base_url = urlparse(news_link.get('href')).netloc #getting the base_url
 
 
 			#bottom-line - completed
@@ -132,9 +132,9 @@ def myfunc():
 							
 							add_comments_fields.hnnews_id = int(comment_hnnews_id)
 
-							if comment_text is not None:
+							if comment_text.span is not None:
 								if comment_text.span.text is not None:
-									add_comments_fields.content = comment_text.span.text
+									add_comments_fields.content = comment_text.span.text.encode('utf-8')
 								else:
 									add_comments_fields.content = None
 							
@@ -158,42 +158,12 @@ def myfunc():
 			karma_points_check = soup_bottom_link.find('span',{'class':'score'})
 			if karma_points_check is not None:
 				#check and add data in karma_points if displayed user's karma points already exists
-				# print(karma_point.text)
 				add_news_fields.karma_points = karma_point.text #storing karma points
 
 			add_news_fields.time_posted = posted_time #storing time of post as calculated above
 
 			add_news_fields.save()
+
+	print('this is the periodic_task')
 	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	'''
-	req = requests.get("https://news.ycombinator.com/")
-	soup = BeautifulSoup(req.text, 'html.parser')
-	news_links = soup.find_all("a",{'class':'storylink'})
-	print(type(news_links),'typeeeee')
-	list_news_links = []
-	
-	for link in news_links[::-1]:
-		list_news_links.append(str(link.get('href')))
-		list_news_links.append(str(link.text))
-		host_name_url = urlparse(str(link.get('href')))
-		list_news_links.append(str(host_name_url.netloc))
-	'''
-	print('thissss is periodic_task')
 	return 'periodic_task'

@@ -17,6 +17,7 @@ class NewsLinks(models.Model):
 	title = models.CharField(max_length=300, null=True, blank=True)
 	posted_by = models.ForeignKey(ProfileUser, on_delete=models.CASCADE, null=True, blank=True)
 	title_link = models.URLField(max_length=400, null=True, blank=True)
+	base_url = models.URLField(max_length=100, null=True, blank=True)
 	num_comments = models.PositiveIntegerField(default=0, null=True, blank=True)
 	hackernews_post_id = models.PositiveIntegerField(unique=True)
 	# karma_points = models.PositiveSmallIntegerField(default=0, null=True, blank=True)
@@ -34,8 +35,19 @@ class Comments(models.Model):
 	content = models.CharField(max_length=10000)
 	posted_by = models.ForeignKey(ProfileUser, on_delete=models.CASCADE)		
 	added_on = models.DateTimeField(auto_now_add=True)
-	comment = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
+	comment = models.ForeignKey('Comments', null=True, blank=True, on_delete=models.CASCADE)
 	hnnews_id = models.PositiveIntegerField(blank=True, null=True)
+	upvotes = models.PositiveSmallIntegerField(default=0, null=True, blank=True)
 
 	def __str__(self):
 		return '%s' % (self.id)
+
+class UpvotesNewslink(models.Model):
+	newslink_voted = models.BooleanField(default=False)
+	voted_by = models.ForeignKey(ProfileUser,on_delete=models.CASCADE)
+	newslink = models.ForeignKey(NewsLinks, on_delete=models.CASCADE)
+
+class UpvotesComment(models.Model):
+	comment_voted = models.BooleanField(default=False)
+	voted_by = models.ForeignKey(ProfileUser, on_delete=models.CASCADE)
+	comment = models.ForeignKey(Comments, on_delete=models.CASCADE)	
