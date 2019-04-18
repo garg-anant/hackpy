@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Comments, ProfileUser
+from .models import Comments, ProfileUser, NewsLinks
 
 class CommentForm(forms.ModelForm):
 
@@ -13,4 +13,10 @@ class RegisterUser(forms.ModelForm):
 
 	class Meta:
 		model = ProfileUser
-		fields = ('username', 'password')		
+		fields = ('username', 'password')
+
+class AddLink(forms.ModelForm):
+
+	class Meta:
+		model = NewsLinks
+		fields = ('title','title_link')

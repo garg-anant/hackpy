@@ -19,7 +19,7 @@ class NewsLinks(models.Model):
 	title_link = models.URLField(max_length=400, null=True, blank=True)
 	base_url = models.URLField(max_length=100, null=True, blank=True)
 	num_comments = models.PositiveIntegerField(default=0, null=True, blank=True)
-	hackernews_post_id = models.PositiveIntegerField(unique=True)
+	hackernews_post_id = models.PositiveIntegerField(unique=True, null=True, blank=True)
 	# karma_points = models.PositiveSmallIntegerField(default=0, null=True, blank=True)
 	karma_points = models.CharField(max_length=15, null=True, blank=True)
 	time_posted = models.DateTimeField(null=True, blank=True)

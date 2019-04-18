@@ -14,7 +14,7 @@ import datetime
 # from .tasks import test, return_5, myfunc
 from .tasks import myfunc
 from .models import NewsLinks, ProfileUser, Comments, UpvotesNewslink, UpvotesComment
-from .forms import CommentForm, RegisterUser
+from .forms import CommentForm, RegisterUser, AddLink
 
 
 # Create your views here.
@@ -22,14 +22,13 @@ from .forms import CommentForm, RegisterUser
 def index(request):
 	myfunc.delay()
 	form = RegisterUser()
-	
 	if request.method == 'POST':
 		username = request.POST.get('username')
 		password = request.POST.get('password')
 		user = authenticate(username=username, password=password)
 		if user is not None:
 			login(request, user)
-			return HttpResponseRedirect(reverse('home'))
+			return redirect('home')
 
 	return render(request, 'hackernews/login.jinja' ,{'form':form})
 
@@ -43,7 +42,6 @@ def comments(request, newslink_id):
 
 	if request.method=='POST':
 		form = CommentForm(request.POST)
-		print('entered here')
 		if form.is_valid():
 			form_save = form.save(commit=False)
 			form_save.newslink = newslink
@@ -87,7 +85,7 @@ def create_account(request):
 
 def logout_func(request):
 	logout(request)
-	return HttpResponseRedirect(reverse('views'))
+	return HttpResponseRedirect(reverse('login'))
 
 def vote_newslink(request):
 	newslink_id = request.GET.get('newslink_id')
@@ -137,20 +135,32 @@ def reply(request,comment_id):
 	
 	return render(request, 'hackernews/reply.jinja', ctx)
 
-# @login_required(login_url=redirect('views'))
+def submit(request):
+	ctx={}
+	form = AddLink()
+	if request.method == 'POST':
+		form = AddLink(request.POST)
+		if form.is_valid():
+			form_save = form.save(commit=False)
+			form_save.posted_by = request.user
+			form_save.base_url = urlparse(form_save.title_link).netloc
+			form_save.time_posted = datetime.datetime.now()
+			form_save.save()
+			return redirect('home')
+
+	return render(request,'hackernews/submit.jinja',ctx)
+
+@login_required(login_url='login')
 def home(request):
 	
 	ctx = {}
-	
-	if not request.user.is_authenticated:
-		return render(request, 'hackernews/login.jinja',{})
-	else:
-		newslinks = NewsLinks.objects.all()
-		paginator = Paginator(newslinks, 30)	
-		page = request.GET.get('page')
-		newslinks = paginator.get_page(page)
+	newslinks = NewsLinks.objects.all()
+	print(newslinks[0].time_posted)
+	paginator = Paginator(newslinks, 30)	
+	page = request.GET.get('page')
+	newslinks = paginator.get_page(page)
 
-		newslink_votes = UpvotesNewslink
+	newslink_votes = UpvotesNewslink
 
 	ctx = {
 	'newslinks': newslinks,
