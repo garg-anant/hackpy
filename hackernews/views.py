@@ -79,7 +79,15 @@ def search(request):
 
 	query = request.GET.get('q')
 	es = Elasticsearch()
-	resp = es.search(index="django", body={"size":100, "query": {"bool": {"should": [{"multi_match": {"query": query,"fields": ["title^5","title.ngram"]} }] } } })
+	# resp = es.search(index="django", body={"size":100, "query": {"bool": {"should": [{"multi_match": {"query": query,"fields": ["title^5","title.ngram"]} }] } } })
+	resp = es.search(index="django", body={"size":100, "query": {
+    "multi_match": {
+      "fields":  [ "title" ],
+      "query": query,
+      "fuzziness": "AUTO"
+    }
+  } })
+	
 	res = resp['hits']['hits']
 	linklist = []
 	for r in res:
