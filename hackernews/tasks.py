@@ -7,12 +7,15 @@ from celery import task
 from celery import group
 from celery import signature
 
+
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 import datetime
 
 from .models import NewsLinks, ProfileUser, Comments
+
+from hackernews.management.commands.push_to_index import Command
 
 # @periodic_task(run_every=(crontab(minute="*")))
 # def return_5():
@@ -118,6 +121,8 @@ def myfunc():
 			add_news_fields.save()
 
 	print('this is the periodic_task')
+
+	Command.handle()
 	
 	return 'periodic_task'
 
@@ -170,3 +175,11 @@ def compute_for_comments(comment_element,newslink_id,time_of_upload):
 
 	print('Comments and users from the given newslink added')
 	return 'comments added from given newslink'	
+
+
+@shared_task
+def add_to_index():
+	add_to_index_obj = Command()
+	add_to_index_obj.handle()
+
+	

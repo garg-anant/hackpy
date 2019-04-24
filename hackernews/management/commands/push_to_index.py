@@ -7,6 +7,7 @@ from elasticsearch.helpers import bulk
 
 class Command(BaseCommand):
 	help = 'push to the index for Newslink database'
+	
 	def handle(self, *args, **options):
 		self.recreate_index()
 		self.push_db_to_index()

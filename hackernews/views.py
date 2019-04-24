@@ -17,9 +17,11 @@ import json
 
 
 # from .tasks import test, return_5, myfunc
-from .tasks import myfunc
+from .tasks import myfunc, add_to_index
 from .models import NewsLinks, ProfileUser, Comments, UpvotesNewslink, UpvotesComment
 from .forms import CommentForm, RegisterUser, AddLink
+from hackernews.management.commands.push_to_index import Command
+
 
 client = settings.ES_CLIENT
 
@@ -87,12 +89,13 @@ def search(request):
       "fuzziness": "AUTO"
     }
   } })
-	
+
 	res = resp['hits']['hits']
 	linklist = []
 	for r in res:
 		l_id = int(r['_id'])
-		link = get_object_or_404(NewsLinks, pk=l_id)
+		# link = get(NewsLinks, pk=l_id)
+		link = NewsLinks.objects.filter(id=l_id).last()
 		linklist.append(link)
 
 	ctx = {
@@ -177,7 +180,10 @@ def submit(request):
 			form_save.base_url = urlparse(form_save.title_link).netloc
 			form_save.time_posted = datetime.datetime.now()
 			form_save.save()
+			add_to_index.delay()
 			return redirect('home')
+
+	add_to_index.delay()
 
 	return render(request,'hackernews/submit.jinja',ctx)
 
