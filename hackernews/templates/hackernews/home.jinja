@@ -47,7 +47,7 @@
       	<span class="sitebit comhead"> (<a href=""><span class="sitestr">{{ newslink.base_url }}</span></a>)</span>
       	<tr><td colspan="2"></td>
       		<td class="subtext">
-        	<span class="score" id="score_19580860">{{ newslink.karma_points }}</span> by <a href="#" class="hnuser">{{ newslink.posted_by }}</a> <span class="age"><a href="{{ url('comments', newslink_id=newslink.id) }}"><script> document.write(moment("{{newslink.time_posted.strftime("%Y%m%d")}}", "YYYYMMDD").fromNow()); </script></a>  </span> | <a href="{{ url('comments', newslink_id=newslink.id) }}">{{ newslink.num_comments }}&nbsp;comments</a>              
+        	<span class="score" id="score_19580860">{{ newslink.karma_points }}</span> by <a href="#" class="hnuser">{{ newslink.posted_by }}</a> <span class="age">{% if newslink.time_posted %}<a href="{{ url('comments', newslink_id=newslink.id) }}"><script> document.write(moment("{{newslink.time_posted.strftime("%Y%m%d")}}", "YYYYMMDD").fromNow()); </script></a>{% endif %}</span> | <a href="{{ url('comments', newslink_id=newslink.id) }}">{{ newslink.num_comments }}&nbsp;comments</a>              
         	</td>
         </tr>
       <tr class="spacer" style="height:5px"></tr>

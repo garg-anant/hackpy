@@ -15,4 +15,4 @@ urlpatterns=[
 	path('vote_newslink', views.vote_newslink, name='vote_newslink'),
 	#Ajax Vote Comment
 	path('vote_comment', views.vote_comment, name='vote_comment'),
-]	
+]

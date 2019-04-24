@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 import os
 import re
 import sys
+from elasticsearch import Elasticsearch, RequestsHttpConnection
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -42,8 +43,47 @@ INSTALLED_APPS = [
     'hackernews',
     'django_extensions',
     'djcelery',
+    # 'django_elasticsearch_dsl',
 ]
 
+ES_CLIENT = Elasticsearch(
+    ['http://127.0.0.1:9200/'],
+    connection_class=RequestsHttpConnection
+)
+
+'''
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': 'elasticsearch:9200'
+    },
+}
+
+ELASTICSEARCH_URL = '127.0.0.1:9200'
+SEARCH_SETTINGS = {
+    'connections': {
+        'default': getenv('ELASTICSEARCH_URL'),
+    },
+    'indexes': {
+        'hackpy': {
+            'models': [
+                'hackernews.NewsLinks',
+            ]
+        }
+    },
+    'settings': {
+        # batch size for ES bulk api operations
+        'chunk_size': 500,
+        # default page size for search results
+        'page_size': 25,
+        # set to True to connect post_save/delete signals
+        'auto_sync': True,
+        # List of models which will never auto_sync even if auto_sync is True
+        'never_auto_sync': [],
+        # if true, then indexes must have mapping files
+        'strict_validation': False
+    }
+}
+'''
 AUTH_USER_MODEL = 'hackernews.ProfileUser'
 
 
@@ -126,6 +166,13 @@ DATABASES = {
 }
 
 
+'''
+ES_CONNECTIONS = {
+    'default': {
+        'hosts': [http://localhost:9200],
+    }
+}
+'''
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
 

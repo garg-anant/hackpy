@@ -5,21 +5,28 @@ from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
+from django.shortcuts import get_object_or_404
 
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 import datetime
+from elasticsearch import Elasticsearch
+import json
+
 
 # from .tasks import test, return_5, myfunc
 from .tasks import myfunc
 from .models import NewsLinks, ProfileUser, Comments, UpvotesNewslink, UpvotesComment
 from .forms import CommentForm, RegisterUser, AddLink
 
+client = settings.ES_CLIENT
+
 
 # Create your views here.
 
-def index(request):
+def index(request): 
 	myfunc.delay()
 	form = RegisterUser()
 	if request.method == 'POST':
@@ -61,11 +68,27 @@ def comments(request, newslink_id):
 	return render(request, 'hackernews/comments.jinja', ctx)
 
 def search(request):
-	text = request.GET.get('q')
-	filtered_links = NewsLinks.objects.filter(title__icontains=text)
+	# text = request.GET.get('q')
 	
+	'''
+	filtered_links = NewsLinks.objects.filter(title__icontains=text)
 	ctx = {
 		'filtered_links':filtered_links,
+	}
+	'''
+
+	query = request.GET.get('q')
+	es = Elasticsearch()
+	resp = es.search(index="django", body={"size":100, "query": {"bool": {"should": [{"multi_match": {"query": query,"fields": ["title^5","title.ngram"]} }] } } })
+	res = resp['hits']['hits']
+	linklist = []
+	for r in res:
+		l_id = int(r['_id'])
+		link = get_object_or_404(NewsLinks, pk=l_id)
+		linklist.append(link)
+
+	ctx = {
+		'filtered_links':linklist,
 	}
 	return render(request,'hackernews/search.jinja',ctx)
 
@@ -109,7 +132,7 @@ def vote_comment(request):
 	comment.upvotes += 1
 	comment.save()
 
-	return HttpResponse('SUCCESS')	
+	return HttpResponse('SUCCESS')  
 
 def reply(request,comment_id):
 	comment = Comments.objects.filter(id=comment_id).last()
@@ -152,11 +175,10 @@ def submit(request):
 
 @login_required(login_url='login')
 def home(request):
-	
 	ctx = {}
 	newslinks = NewsLinks.objects.all()
-	print(newslinks[0].time_posted)
-	paginator = Paginator(newslinks, 30)	
+	# print(newslinks[0].time_posted)
+	paginator = Paginator(newslinks, 30)    
 	page = request.GET.get('page')
 	newslinks = paginator.get_page(page)
 

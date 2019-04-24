@@ -4,6 +4,8 @@ from celery import shared_task, task, Celery
 from celery.schedules import crontab
 from celery.decorators import periodic_task
 from celery import task
+from celery import group
+from celery import signature
 
 import requests
 from bs4 import BeautifulSoup
@@ -16,14 +18,6 @@ from .models import NewsLinks, ProfileUser, Comments
 # def return_5():
 #     print('hello world return func')
 #     return 5
-
-# @shared_task
-# def add(x,y):
-#   return x + y
-
-# @app.task
-# def test(word):
-#   return word
 
 @celery.decorators.periodic_task(run_every=datetime.timedelta(hours=1))
 def myfunc():
@@ -45,7 +39,7 @@ def myfunc():
 			news_add,_ = NewsLinks.objects.get_or_create(hackernews_post_id=int(hnnews_id))
 
 			add_news_fields = NewsLinks.objects.get(hackernews_post_id=int(hnnews_id))
-			#top-line - completed
+			#top-line
 			soup_top_line = BeautifulSoup(str(element),'html.parser')
 			news_link = soup_top_line.find("a", {'class':'storylink'})
 			add_news_fields.title = news_link.text #storing title
@@ -53,7 +47,7 @@ def myfunc():
 			add_news_fields.base_url = urlparse(news_link.get('href')).netloc #getting the base_url
 
 
-			#bottom-line - completed
+			#bottom-line
 			next_row = element.findNext('tr') #Getting the soup element of bottom row
 			soup_bottom_link = BeautifulSoup(str(next_row),'html.parser')
 
@@ -95,52 +89,11 @@ def myfunc():
 					comment_elements = comments_soup.find_all("tr",{'class':'athing comtr'})
 					
 					#add here comment data from individual comments
-					for comment_element in comment_elements:
+					# for comment_element in comment_elements:
+					g = group(compute_for_comments(comment_element,newslink_id,time_of_upload) for comment_element in comment_elements)
+					g.delay()
 
-						#Storing NewsLink id
-						soup_comment = BeautifulSoup(str(comment_element),'html.parser')
-						comment_hnnews_id = soup_comment.find("tr",{'class':'athing comtr'})
-						comment_hnnews_id = comment_hnnews_id.get('id') #getting hnnews id for comment table
-						comment_text = soup_comment.find("div",{'class':'comment'})
-						comment_rows = Comments.objects.filter(hnnews_id=int(comment_hnnews_id)).exists()
-						if comment_rows == False:
-
-							print(newslink_id)
-							newslink_obj = NewsLinks.objects.get(hackernews_post_id=newslink_id)
-
-							post_by = soup_comment.find("a",{'class':'hnuser'})
-							profile_user = ProfileUser.objects.filter(username=post_by.text).exists()
-							if profile_user == False:
-								new_hnuser,_ = ProfileUser.objects.get_or_create(username=post_by.text)
-							else:
-								pass
-
-							profile_user_instance = ProfileUser.objects.filter(username=post_by.text).last()
-							comments_add,_ = Comments.objects.get_or_create(hnnews_id=int(comment_hnnews_id),newslink=newslink_obj, posted_by=profile_user_instance)
-
-							add_comments_fields = Comments.objects.filter(hnnews_id=int(comment_hnnews_id)).last()
-							#check and register if displayed user already exists
-							
-							
-							#storing time(comment added_on) in Comments table
-							comment_added_on = soup_comment.find("a",{'href':'item?id='+comment_hnnews_id})
-							if "hour" in comment_added_on.text:
-								comment_posted_on = datetime.datetime.now() - datetime.timedelta(hours=int(time_of_upload.text.split(' ')[0]))
-							if "minute" in comment_added_on.text:
-								comment_posted_on = datetime.datetime.now() - datetime.timedelta(minutes=int(time_of_upload.text.split(' ')[0]))
-							
-							
-							add_comments_fields.hnnews_id = int(comment_hnnews_id)
-
-							if comment_text.span is not None:
-								if comment_text.span.text is not None:
-									add_comments_fields.content = comment_text.span.text.encode('utf-8')
-								else:
-									add_comments_fields.content = None
-							
-							add_comments_fields.added_on = comment_posted_on
-							
-							add_comments_fields.save()
+					####### COMMENT SCRAPING CODE WAS HERE
 
 
 			else:
@@ -167,3 +120,53 @@ def myfunc():
 	print('this is the periodic_task')
 	
 	return 'periodic_task'
+
+@task
+def compute_for_comments(comment_element,newslink_id,time_of_upload):
+	#Storing NewsLink id
+	soup_comment = BeautifulSoup(str(comment_element),'html.parser')
+	comment_hnnews_id = soup_comment.find("tr",{'class':'athing comtr'})
+	comment_hnnews_id = comment_hnnews_id.get('id') #getting hnnews id for comment table
+	comment_text = soup_comment.find("div",{'class':'comment'})
+	comment_rows = Comments.objects.filter(hnnews_id=int(comment_hnnews_id)).exists()
+	if comment_rows == False:
+
+		print(newslink_id)
+		newslink_obj = NewsLinks.objects.get(hackernews_post_id=newslink_id)
+
+		post_by = soup_comment.find("a",{'class':'hnuser'})
+		profile_user = ProfileUser.objects.filter(username=post_by.text).exists()
+		if profile_user == False:
+			new_hnuser,_ = ProfileUser.objects.get_or_create(username=post_by.text)
+		else:
+			pass
+
+		profile_user_instance = ProfileUser.objects.filter(username=post_by.text).last()
+		comments_add,_ = Comments.objects.get_or_create(hnnews_id=int(comment_hnnews_id),newslink=newslink_obj, posted_by=profile_user_instance)
+
+		add_comments_fields = Comments.objects.filter(hnnews_id=int(comment_hnnews_id)).last()
+		#check and register if displayed user already exists
+		
+		
+		#storing time(comment added_on) in Comments table
+		comment_added_on = soup_comment.find("a",{'href':'item?id='+comment_hnnews_id})
+		if "hour" in comment_added_on.text:
+			comment_posted_on = datetime.datetime.now() - datetime.timedelta(hours=int(time_of_upload.text.split(' ')[0]))
+		if "minute" in comment_added_on.text:
+			comment_posted_on = datetime.datetime.now() - datetime.timedelta(minutes=int(time_of_upload.text.split(' ')[0]))
+		
+		
+		add_comments_fields.hnnews_id = int(comment_hnnews_id)
+
+		if comment_text.span is not None:
+			if comment_text.span.text is not None:
+				add_comments_fields.content = comment_text.span.text.encode('utf-8')
+			else:
+				add_comments_fields.content = None
+		
+		add_comments_fields.added_on = comment_posted_on
+		
+		add_comments_fields.save()
+
+	print('Comments and users from the given newslink added')
+	return 'comments added from given newslink'	
